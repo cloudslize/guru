@@ -9619,7 +9619,7 @@ background-position: 100%;
   position: fixed;
   left: 5%;
   width: 40%;
-  top: 0;
+  top: 10rem;
   mix-blend-mode:screen;
   background-size: contain;
   background-repeat: no-repeat;
@@ -9667,4 +9667,53 @@ background-position: 100%;
   opacity: 1;
   background-position: 50% 50%;
   filter: blur(0);
+}
+
+@media (max-width:480px) {
+  .section {
+    display: none;
+  }
+}
+
+/* Hide section by default (for web/desktop) */
+.mob {
+  display: none;
+}
+
+/* Show only on mobile screens */
+@media (max-width: 768px) {
+  .mob {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .overall_mob {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .mob_img img {
+    max-width: 90%;
+    height: auto;
+    border-radius: 10px;
+  }
+
+  .mob_title {
+    margin-top: 15px;
+    padding: 10px;
+  }
+
+  .mob_title h2 {
+    font-size: 20px;
+    color: #164072;
+  }
+
+  .mob_title p {
+    font-size: 16px;
+    color: #666;
+  }
 }
