@@ -1,3 +1,3 @@
-# tuition-platform
+# Guru landing page 
 
 zafirs version
