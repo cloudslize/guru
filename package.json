@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
   "dev": "vite",
-  "build": "tsc --build && vite build",
+  "build": "NODE_ENV=production tsc --build && vite build",
   "lint": "eslint .",
   "preview": "vite preview",
   "predeploy": "tsc --build && vite build",
-  "deploy": "gh-pages -d dist"
+  "deploy": "npm run build && gh-pages -d dist"
   },
 
   "dependencies": {
