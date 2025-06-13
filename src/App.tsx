@@ -3,7 +3,6 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import TutorPage from './pages/TutorPage';
-import AnimatedHowItWorks from './components/AnimatedHowItWorks';
 import AnimatedHowItWorksStudent from './components/AnimatedHowItWorksStudent';
 import OneStopSolution from './components/OneStopSolution';
 
