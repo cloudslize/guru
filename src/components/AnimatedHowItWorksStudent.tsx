@@ -158,11 +158,17 @@ export default function AnimatedHowItWorksStudent() {
     }),
   };
 
+  // const transition = {
+  //   y: { type: "spring", stiffness: 300, damping: 30 },
+  //   opacity: { duration: 0.3 },
+  //   scale: { duration: 0.3 },
+  // };
+
   const transition = {
-    y: { type: "spring", stiffness: 300, damping: 30 },
-    opacity: { duration: 0.3 },
-    scale: { duration: 0.3 },
-  };
+  y: { type: 'spring', stiffness: 100, damping: 10 },
+  opacity: { duration: 0.3 },
+  scale: { duration: 0.3 }
+} as const;
 
   return (
     <section 
