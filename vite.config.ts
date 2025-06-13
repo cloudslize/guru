@@ -2,26 +2,28 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-const isProd = process.env.NODE_ENV === 'production';
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: isProd ? '/guru/' : '/', // 👈 use '/guru/' only in production
+  base: mode === 'production' ? '/guru/' : '/', // ✅ fix here
   server: {
     host: "::",
     port: 8080,
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(), // ✅ only in dev
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  assetsInclude: ['**/*.PNG', '**/*.Png', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg'],
+  assetsInclude: [
+    '**/*.PNG', '**/*.Png', '**/*.png',
+    '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg',
+  ],
   optimizeDeps: {
-    exclude: ['js-big-decimal']
+    exclude: ['js-big-decimal'],
   }
 }));

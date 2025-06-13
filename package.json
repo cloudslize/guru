@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "homepage": "https://cloudslize.com/guru",
   "scripts": {
   "dev": "vite",
   "build": "NODE_ENV=production tsc --build && vite build",
