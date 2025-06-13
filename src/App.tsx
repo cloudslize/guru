@@ -29,7 +29,7 @@ function StudentPage() {
 
 function App() {
   return (
-    <Router>
+    <Router basename="/guru">
       <Routes>
         <Route path="/tutor" element={
           <Layout>
