@@ -39,6 +39,7 @@ export default function AnimatedHowItWorksStudent() {
   const [activeStep, setActiveStep] = useState(0);
   const [isInView, setIsInView] = useState(false);
   const [canScroll, setCanScroll] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const scrollAccumulator = useRef(0);
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('down');
@@ -50,12 +51,23 @@ export default function AnimatedHowItWorksStudent() {
     console.log('Student How It Works component mounted');
   }, []);
 
+  // Check if mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Observer for when section comes into view
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsInView(entry.isIntersecting);
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !isMobile) {
           setCanScroll(false);
           scrollAccumulator.current = 0;
           // Find the next section when this section comes into view
@@ -63,7 +75,7 @@ export default function AnimatedHowItWorksStudent() {
         }
       },
       {
-        threshold: 0.4
+        threshold: isMobile ? 0.2 : 0.4
       }
     );
 
@@ -72,11 +84,11 @@ export default function AnimatedHowItWorksStudent() {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [isMobile]);
 
-  // Handle scroll behavior
+  // Handle scroll behavior (disabled on mobile)
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || isMobile) return;
 
     const handleWheel = (e: WheelEvent) => {
       if (isTransitioning.current) {
@@ -138,7 +150,15 @@ export default function AnimatedHowItWorksStudent() {
     return () => {
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [isInView, canScroll, activeStep]);
+  }, [isInView, canScroll, activeStep, isMobile]);
+
+  // Mobile touch handlers
+  const handleStepClick = (index: number) => {
+    if (isMobile) {
+      setScrollDirection(index > activeStep ? 'down' : 'up');
+      setActiveStep(index);
+    }
+  };
 
   const slideVariants = {
     enter: (direction: 'up' | 'down') => ({
@@ -158,130 +178,149 @@ export default function AnimatedHowItWorksStudent() {
     }),
   };
 
-  // const transition = {
-  //   y: { type: "spring", stiffness: 300, damping: 30 },
-  //   opacity: { duration: 0.3 },
-  //   scale: { duration: 0.3 },
-  // };
-
   const transition = {
-  y: { type: 'spring', stiffness: 100, damping: 10 },
-  opacity: { duration: 0.3 },
-  scale: { duration: 0.3 }
-} as const;
+    y: { type: 'spring', stiffness: 100, damping: 10 },
+    opacity: { duration: 0.3 },
+    scale: { duration: 0.3 }
+  } as const;
 
   return (
     <section 
       ref={sectionRef}
       data-how-it-works
-      className={`relative bg-gray-50 min-h-screen ${
-        isInView && !canScroll ? 'fixed inset-0 w-full' : ''
+      className={`relative bg-gray-50 ${
+        isMobile 
+          ? 'min-h-screen py-8 sm:py-12' 
+          : `min-h-screen ${isInView && !canScroll ? 'fixed inset-0 w-full' : ''}`
       }`}
     >
-      <div className="container mx-auto px-4 md:px-6 py-16 md:py-24 h-screen flex flex-col">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg">
+      <div className={`container mx-auto px-4 sm:px-6 ${
+        isMobile 
+          ? 'py-8 space-y-8' 
+          : 'py-16 md:py-24 h-screen flex flex-col'
+      }`}>
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">How It Works</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base md:text-lg px-4">
             Start your learning journey in just a few simple steps
           </p>
         </div>
 
-        <div className="flex-1 grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
-          {/* Left side - Device Frame */}
-          <div className="h-[min(500px,60vh)] lg:h-auto">
-            <div className="relative h-full flex items-center">
-              <div className="absolute inset-0 bg-gradient rounded-2xl opacity-20 blur-xl -m-4"></div>
-              {/* Device Frame */}
-              <div className="relative w-full max-w-[800px] mx-auto bg-[#1A1A1A] rounded-[2.5rem] p-3 shadow-2xl">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-6 bg-[#1A1A1A] rounded-b-xl"></div>
-                <div className="bg-white rounded-[2rem] overflow-hidden">
-                  <AnimatePresence mode="wait" custom={scrollDirection}>
-                    <motion.img 
-                      key={activeStep}
-                      src={steps[activeStep].image}
-                      alt={steps[activeStep].title}
+        {isMobile ? (
+          // Mobile Layout - Vertical Stack
+          <div className="space-y-6 sm:space-y-8">
+            {steps.map((step, index) => (
+              <div 
+                key={index}
+                className={`bg-white rounded-2xl p-4 sm:p-6 shadow-lg transition-all duration-300 ${
+                  index === activeStep ? 'ring-2 ring-orange-200 shadow-xl' : ''
+                }`}
+                onClick={() => handleStepClick(index)}
+              >
+                <div className="flex items-start gap-3 sm:gap-4 mb-4">
+                  <div className="bg-gradient w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base shrink-0">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-bold mb-2">{step.title}</h3>
+                    <p className="text-gray-600 text-sm sm:text-base leading-relaxed">{step.description}</p>
+                  </div>
+                </div>
+                
+                {/* Mobile image */}
+                <div className="relative bg-[#1A1A1A] rounded-xl sm:rounded-2xl p-2 sm:p-3 shadow-lg">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-3 sm:h-4 bg-[#1A1A1A] rounded-b-lg"></div>
+                  <div className="bg-white rounded-lg sm:rounded-xl overflow-hidden">
+                    <img 
+                      src={step.image}
+                      alt={step.title}
                       className="w-full h-auto"
+                    />
+                  </div>
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1/4 h-0.5 bg-gray-800 rounded-full"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Desktop Layout - Side by Side
+          <div className="flex-1 grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            {/* Left side - Device Frame */}
+            <div className="h-[min(500px,60vh)] lg:h-auto">
+              <div className="relative h-full flex items-center">
+                <div className="absolute inset-0 bg-gradient rounded-2xl opacity-20 blur-xl -m-4"></div>
+                {/* Device Frame */}
+                <div className="relative w-full max-w-[800px] mx-auto bg-[#1A1A1A] rounded-[2.5rem] p-3 shadow-2xl">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-6 bg-[#1A1A1A] rounded-b-xl"></div>
+                  <div className="bg-white rounded-[2rem] overflow-hidden">
+                    <AnimatePresence mode="wait" custom={scrollDirection}>
+                      <motion.img 
+                        key={activeStep}
+                        src={steps[activeStep].image}
+                        alt={steps[activeStep].title}
+                        className="w-full h-auto"
+                        custom={scrollDirection}
+                        variants={slideVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={transition}
+                      />
+                    </AnimatePresence>
+                  </div>
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gray-800 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Steps */}
+            <div className="relative h-[min(300px,40vh)] lg:h-auto flex items-center">
+              <AnimatePresence mode="wait" custom={scrollDirection}>
+                {steps.map((step, index) => (
+                  index === activeStep && (
+                    <motion.div
+                      key={index}
                       custom={scrollDirection}
                       variants={slideVariants}
                       initial="enter"
                       animate="center"
                       exit="exit"
                       transition={transition}
-                    />
-                  </AnimatePresence>
-                </div>
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gray-800 rounded-full"></div>
-              </div>
+                      className="absolute w-full"
+                    >
+                      <div className="flex items-start gap-4 md:gap-6">
+                        <div className="bg-gradient w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h3 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{step.title}</h3>
+                          <p className="text-gray-600 text-base md:text-lg">{step.description}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                ))}
+              </AnimatePresence>
             </div>
           </div>
-
-          {/* Right side - Steps */}
-          <div className="relative h-[min(300px,40vh)] lg:h-auto flex items-center">
-            <AnimatePresence mode="wait" custom={scrollDirection}>
-              {steps.map((step, index) => (
-                index === activeStep && (
-                  <motion.div
-                    key={index}
-                    custom={scrollDirection}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={transition}
-                    className="absolute w-full"
-                  >
-                    <div className="flex items-start gap-4 md:gap-6">
-                      <div className="bg-gradient w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0">
-                        {index + 1}
-                      </div>
-                      <div>
-                        <h3 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{step.title}</h3>
-                        <p className="text-gray-600 text-base md:text-lg">{step.description}</p>
-                      </div>
-                    </div>
-
-                    {/* Mobile image - only shown on smaller screens */}
-                    <div className="mt-6 lg:hidden">
-                      <div className="relative bg-[#1A1A1A] rounded-[2rem] md:rounded-[2.5rem] p-2 md:p-3 shadow-2xl">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-4 md:h-6 bg-[#1A1A1A] rounded-b-xl"></div>
-                        <div className="bg-white rounded-[1.8rem] md:rounded-[2rem] overflow-hidden">
-                          <motion.img 
-                            src={step.image}
-                            alt={step.title}
-                            className="w-full h-auto"
-                            custom={scrollDirection}
-                            variants={slideVariants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={transition}
-                          />
-                        </div>
-                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gray-800 rounded-full"></div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
+        )}
 
         {/* Progress indicator */}
-        <div className="mt-8 flex justify-center gap-2">
+        <div className="flex justify-center gap-2 mt-6 sm:mt-8">
           {steps.map((_, index) => (
-            <div
+            <button
               key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === activeStep ? 'bg-gradient w-6' : 'bg-gray-300'
-              }`}
+              onClick={() => handleStepClick(index)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === activeStep ? 'bg-gradient w-6 sm:w-8' : 'bg-gray-300 w-2'
+              } ${isMobile ? 'cursor-pointer' : ''}`}
             />
           ))}
         </div>
       </div>
 
-      {/* Spacer div to maintain scroll position */}
-      {isInView && !canScroll && (
+      {/* Spacer div to maintain scroll position (desktop only) */}
+      {!isMobile && isInView && !canScroll && (
         <div style={{ height: '100vh' }} aria-hidden="true" />
       )}
     </section>
