@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { X, Menu, GraduationCap } from "lucide-react";
+
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   useEffect(() => {
     const handleScroll = () => {
